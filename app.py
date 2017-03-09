@@ -10,9 +10,6 @@ aggs = scan(n=10000, verbose=1)
 
 allowed_parent = ['exe', 'auid', 'egid', 'gid', 'syscall', ]
 allowed_child = ['mode', 'nametype', 'ogid', ]  # 'name']
-logs = dict()
-act = []
-tree = ClusterTree(sim_level=0.2)
 
 
 def prepare_log(log, annotation=None):
@@ -30,6 +27,9 @@ def prepare_log(log, annotation=None):
     log.update(child)
     return log
 
+logs = dict()
+act = []
+tree = ClusterTree(sim_level=0.2)
 
 count = 0
 separator = 0
@@ -56,10 +56,11 @@ for key in aggs.keys():
             log_current = prepare_log(i)
 
             for k in range(1, h + 1):
-                log_prev = prepare_log(aggs[key][j - k])
-                log_current.update({'log_' + str(k): str(log_prev)})
-                # log_prev = prepare_log(aggs[key][j-k], annotation='prev' + str(k))
-                # log_current.update(log_prev)
+                # log_prev = prepare_log(aggs[key][j - k])
+                # log_current.update({'log_' + str(k): str(log_prev)})
+
+                log_prev = prepare_log(aggs[key][j-k], annotation='prev' + str(k))
+                log_current.update(log_prev)
             addres = tree.update(log_current)
             action = {'_op_type': 'update', u'_id': i[0].meta.id, u'_type': u'auditd-parent', u'_index': u'wailt'}
             if addres_prev[:adres_slice] != addres[:adres_slice]:
