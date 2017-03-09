@@ -4,7 +4,7 @@ class enumerator:
         self.data = dict()
         self.inverse_data = dict()
         self.data[(-1,)] = -1
-        self.invese_data[-1] = (-1,)
+        self.inverse_data[-1] = (-1,)
 
     def get_number(self, item):
         if item not in self.data:

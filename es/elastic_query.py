@@ -23,7 +23,7 @@ def scan(n=10, verbose=False):
         aggs[hit.ses].append((hit, hit.meta.inner_hits['auditd-child'].hits.hits))
 
         if i % 1000 == 0 and verbose:
-            print i
+            print str(round(100*i/float(n), 2)) + "%"
 
         if i > n:
             break
