@@ -6,8 +6,10 @@ previous_separate_policy = False
 def sub_actions(aggs, tree, h=1, adres_slice=3):
     count = 0
     separator = 0
-
     seq = dict()
+
+    act = []
+
     for key in aggs.keys():
         seq[key] = []
         addres_prev = []
@@ -54,3 +56,26 @@ def sub_actions(aggs, tree, h=1, adres_slice=3):
     print 'acted'
 
     return seq
+
+def post_sub_actions(sessions, tag_list, ng):
+    first = tag_list
+    res = dict()
+    for ses in sessions:
+        s = sessions[ses]
+        result = [(-1,) for i in range(len(s))]
+        count = 0
+        tag_list = first
+        while len(tag_list) > 0:
+            tag = tag_list[0][0]
+            n = len(tag)
+            val = tag_list[0][1]
+            tag_list = tag_list[1:]
+            for i in range(len(s) - n + 1):
+                flag = min([(1 if result[i + j] == (-1,) else 0) for j in range(n) if i + j < len(s)])
+                if tuple(s[i:i + n]) == tag and flag:
+                    for k in range(n):
+                        result[i + k] = (ng.ngram_iterator.data[tag], count)
+                    count += 1
+        res[ses] = result
+
+    return res
