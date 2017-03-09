@@ -12,7 +12,7 @@ q_has_child = HasChild(type='auditd-child', query=MatchAll(),
                        inner_hits={"sort": {"@timestamp": "asc"}, 'size': 100})
 
 search = Search(using=es, index=index).sort({"@timestamp": {"order": "asc"}})
-search.query = Q((q_has_child | (q_parent & ~q_has_child)))#& Q({'match': {'ses': 15447}}))
+search.query = Q((q_has_child | (q_parent & ~q_has_child) ))
 
 
 def scan(n=10, verbose=False):

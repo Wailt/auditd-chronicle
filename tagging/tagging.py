@@ -17,13 +17,13 @@ def sub_actions(aggs, tree, h=1, adres_slice=3):
         seq[key] = []
         addres_prev = []
         if len(aggs[key]) > h:
-            for j in range(h):
-                count += 1
-                i = aggs[key][j]
-                addres = tree.update(prepare_log(i))
-                action = {'_op_type': 'update', u'_id': i[0].meta.id, u'_type': u'auditd-parent', u'_index': u'wailt'}
-                action['doc'] = {"htree": str(addres), 'order': count, 'separator': separator}
-                act.append(action)
+            # for j in range(h):
+            #     count += 1
+            #     i = aggs[key][j]
+            #     addres = tree.update(prepare_log(i))
+            #     action = {'_op_type': 'update', u'_id': i[0].meta.id, u'_type': u'auditd-parent', u'_index': u'wailt'}
+            #     action['doc'] = {"htree": str(addres), 'order': count, 'separator': separator}
+            #     act.append(action)
 
             for j in range(h, len(aggs[key])):
                 i = aggs[key][j]
@@ -92,7 +92,8 @@ def post_actions(seq, h=1, adres_slice=3):
         sessions[key] = [i[0] for i in sorted(set(sessions[key]), key=lambda x: x[1])]
 
     # ngrams
-    ng = Ngrams(sessions=sessions, n=3)
+    print str(h) + 'grams'
+    ng = Ngrams(sessions=sessions, n=h)
 
     # price-list
     vals = list(map(lambda x: (x[0], x[1] * 10 ** (len(x[0])) - 1), ng.ngrams.items()))

@@ -1,14 +1,14 @@
 from collections import Counter
 
 from pattern import delete_some_field, get_features
-##new
 
 def tree_stats(tree):
     stat = tree.counts().replace('\t', '')
     total_depth = max([line.split(': ')[-1][:-1] for line in stat.split('\n')])
-    total_width = max([int(line.split(': ')[1].split(";")[0]) for line in stat.split('\n')])
+    total_width = max([line.split(': ')[1].split(" ")[0] for line in stat.split('\n')])
 
     return 'depth: ', total_depth, 'width: ', total_width
+
 
 class ClusterTree:
     def __init__(self, event=["root"], deep=0, sim_level=0.01, fields=[]):
@@ -40,7 +40,7 @@ class ClusterTree:
 
     def in_child(self, event):
         for ch in self.child:
-            if self.sim(ch.event, event) > ch.sim_level - 10e-3:
+            if self.sim(ch.event, event) > self.sim_level - 10e-3:
                 return True
         return False
 
@@ -68,16 +68,16 @@ class ClusterTree:
 
             self.address = [ch['address'], ]
             if len(event-minus) > 0:
-                # if not child.updated:
-                #     child.filtered_update(set(child.event) - minus)
-                #     child.event = set(minus)
-                #     child.updated = True
+#                 if not child.updated:
+#                     child.filtered_update(set(child.event) - minus)
+#                     child.event = set(minus)
+#                     child.updated = True
                 y = child.filtered_update(event-minus)
                 return self.address + list(y)
             else:
                 return self.address+[0]
         else:
-            self.child.append(ClusterTree(event, deep=self.deep + 1, sim_level = self.sim_level))#self.sim_level
+            self.child.append(ClusterTree(event, deep=self.deep + 1, sim_level=self.sim_level))
             return [len(self.child) - 1, 0]
 
     def update(self, event):
