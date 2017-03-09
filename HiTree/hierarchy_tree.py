@@ -2,6 +2,13 @@ from collections import Counter
 
 from pattern import delete_some_field, get_features
 
+def tree_stats(tree):
+    stat = tree.counts().replace('\t', '')
+    total_depth = max([line.split(': ')[-1][:-1] for line in stat.split('\n')])
+    total_width = max([line.split(': ')[1].split(" ")[0] for line in stat.split('\n')])
+
+    return 'depth: ', total_depth, 'width: ', total_width
+
 class ClusterTree:
     def __init__(self, event=["root"], deep=0, sim_level=0.01, fields=[]):
         self.prepocessed_events=dict()
@@ -26,6 +33,9 @@ class ClusterTree:
         for i in self.child:
             s = s  + str(i.counts()) + "\n"
         return s[:-1]
+
+    def stats(self):
+        return tree_stats(self)
 
     def in_child(self, event):
         for ch in self.child:
