@@ -21,6 +21,12 @@ class ClusterTree:
             s = s + str(i) + "\n"
         return s[:-1]
 
+    def counts(self):
+        s = "\t" * self.deep + 'children: ' + str(len(self.child)) + "; deep: " + str(self.deep) + ",\n"
+        for i in self.child:
+            s = s  + str(i.counts()) + "\n"
+        return s[:-1]
+
     def in_child(self, event):
         for ch in self.child:
             if self.sim(ch.event, event) > self.sim_level - 10e-3:
@@ -51,10 +57,10 @@ class ClusterTree:
 
             self.address = [ch['address'], ]
             if len(event-minus) > 0:
-#                 if not child.updated:
-#                     child.filtered_update(set(child.event) - minus)
-#                     child.event = set(minus)
-#                     child.updated = True
+                # if not child.updated:
+                #     child.filtered_update(set(child.event) - minus)
+                #     child.event = set(minus)
+                #     child.updated = True
                 y = child.filtered_update(event-minus)
                 return self.address + list(y)
             else:
