@@ -4,7 +4,7 @@ from collections import Counter
 
 from ngrams import Ngrams
 
-previous_separate_policy = False
+previous_separate_policy = True #best - false
 
 def sub_actions(aggs, tree, h=1, adres_slice=3):
     count = 0
