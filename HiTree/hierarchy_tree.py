@@ -2,10 +2,12 @@ from collections import Counter
 
 from pattern import delete_some_field, get_features
 
+from copy import copy
+
 def tree_stats(tree):
     stat = tree.counts().replace('\t', '')
-    total_depth = max([line.split(': ')[-1][:-1] for line in stat.split('\n')])
-    total_width = max([line.split(': ')[1].split(" ")[0] for line in stat.split('\n')])
+    total_depth = max([int(line.split(': ')[1].split(';')[0]) for line in stat.split('\n')])
+    total_width = max([int(line.split(': ')[2].split(";")[0][:-1]) for line in stat.split('\n')])
 
     return 'depth: ', total_depth, 'width: ', total_width
 
@@ -17,14 +19,13 @@ class ClusterTree:
         self.child = []
         self.deep = deep
         self.updated = event == ["root"]
-        self.count = 1
         self.sim_level = sim_level
         self.fields = fields
         self.address = [0, ]
         self.updated = False
 
     def __str__(self):
-        s = "\t" * self.deep + str(self.event) + ":deep = " + str(self.deep) + ",count:" + str(self.count) + ",\n"
+        s = "\t" * self.deep + str(self.event) + ":deep = " + str(self.deep) + ",\n"
         for i in self.child:
             s = s + str(i) + "\n"
         return s[:-1]
@@ -38,34 +39,22 @@ class ClusterTree:
     def stats(self):
         return tree_stats(self)
 
-    def in_child(self, event):
-        for ch in self.child:
-            if self.sim(ch.event, event) > self.sim_level - 10e-3:
-                return True
-        return False
-
     def get_sim_child(self, event):
-        valmax = self.sim(self.child[0].event, event)
-        argmax = self.child[0]
-        argn = 0
-        n = 0
-        for ch in self.child:
-            if self.sim(ch.event, event) > valmax:
-                valmax = self.sim(ch.event, event)
-                argmax = ch
-                argn = n
-            n += 1
-        return {"argmax": argmax, "address": argn}
+        if len(self.child) == 0:
+            return None
+        else:
+            sims = [self.sim(ch.event, event) for ch in self.child]
+            valmax = max(sims)
+            argn = sims.index(valmax)
+            return {"argmax": self.child[argn], "address": argn} if valmax > self.sim_level - 10e-3 else None
 
     def filtered_update(self, event):
         event = set(event)
-        if self.in_child(event):
-            ch = self.get_sim_child(event)
+        ch = self.get_sim_child(event)
+        if ch:
             child = ch['argmax']
-            event = set(event)
             minus = event & set(child.event)
             child.event = list(minus)
-
             self.address = [ch['address'], ]
             if len(event-minus) > 0:
 #                 if not child.updated:
@@ -81,7 +70,7 @@ class ClusterTree:
             return [len(self.child) - 1, 0]
 
     def update(self, event):
-        event_copy = {k:event[k] for k in event}
+        event_copy = copy(event)
         if event:
             delete_some_field(event_copy)
             event = tuple(sorted(get_features(event_copy)))
