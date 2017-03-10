@@ -1,7 +1,7 @@
 from cook import prepare_log
 from es.elastic_query import *
 from collections import Counter
-
+from elasticsearch.helpers import bulk
 from ngrams import Ngrams
 
 previous_separate_policy = False
