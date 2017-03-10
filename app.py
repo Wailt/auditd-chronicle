@@ -2,7 +2,7 @@
 from HiTree.hierarchy_tree import ClusterTree
 from tagging import *
 
-aggs = scan(n=20000, verbose=1)
+aggs = scan(n=1000, verbose=1)
 
 logs = dict()
 act = []

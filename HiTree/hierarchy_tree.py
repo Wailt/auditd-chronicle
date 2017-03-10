@@ -77,7 +77,7 @@ class ClusterTree:
             else:
                 return self.address+[0]
         else:
-            self.child.append(ClusterTree(event, deep=self.deep + 1, sim_level=self.sim_level))
+            self.child.append(ClusterTree(event, deep=self.deep + 1, sim_level=self.sim_level if self.deep <=1 else 0.5))
             return [len(self.child) - 1, 0]
 
     def update(self, event):

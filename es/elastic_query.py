@@ -1,5 +1,4 @@
 from elasticsearch import Elasticsearch
-from elasticsearch.helpers import bulk
 
 from elasticsearch_dsl import Search, Q
 from elasticsearch_dsl.query import Type, HasChild, MatchAll
