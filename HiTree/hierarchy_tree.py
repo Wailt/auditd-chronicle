@@ -1,25 +1,31 @@
 from collections import Counter
-
-from pattern import delete_some_field, get_features
-
 from copy import copy
+
 
 def tree_stats(tree):
     stat = tree.counts().replace('\t', '')
     total_depth = max([int(line.split(': ')[1].split(';')[0]) for line in stat.split('\n')])
     total_width = max([int(line.split(': ')[2].split(";")[0][:-1]) for line in stat.split('\n')])
-
     return 'depth: ', total_depth, 'width: ', total_width
 
 
+def get_features(event):
+    features = []
+    for key, val in event.iteritems():
+        features.append(str(key) + "$" + str(val))
+    return features
+
+
 class ClusterTree:
-    def __init__(self, event=["root"], deep=0, sim_level=0.01, fields=[]):
-        self.prepocessed_events=dict()
+    def __init__(self, event=("root",), deep=0, sim_level=0.01, fields=[]):
+        self.prepocessed_events = dict()
         self.event = list(set(event))
         self.child = []
         self.deep = deep
         self.updated = event == ["root"]
         self.sim_level = sim_level
+
+        ## fields - list of primal keys
         self.fields = fields
         self.address = [0, ]
         self.updated = False
@@ -33,20 +39,22 @@ class ClusterTree:
     def counts(self):
         s = "\t" * self.deep + 'children: ' + str(len(self.child)) + "; deep: " + str(self.deep) + ",\n"
         for i in self.child:
-            s = s  + str(i.counts()) + "\n"
+            s = s + str(i.counts()) + "\n"
         return s[:-1]
 
     def stats(self):
         return tree_stats(self)
 
+    def is_empty(self):
+        return len(self.child) == 0
+
     def get_sim_child(self, event):
-        if len(self.child) == 0:
-            return None
-        else:
+        if not self.is_empty():
             sims = [self.sim(ch.event, event) for ch in self.child]
             valmax = max(sims)
             argn = sims.index(valmax)
             return {"argmax": self.child[argn], "address": argn} if valmax > self.sim_level - 10e-3 else None
+        return None
 
     def filtered_update(self, event):
         event = set(event)
@@ -56,28 +64,28 @@ class ClusterTree:
             minus = event & set(child.event)
             child.event = list(minus)
             self.address = [ch['address'], ]
-            if len(event-minus) > 0:
-#                 if not child.updated:
-#                     child.filtered_update(set(child.event) - minus)
-#                     child.event = set(minus)
-#                     child.updated = True
-                y = child.filtered_update(event-minus)
+            if len(event - minus) > 0:
+                # if not child.updated:
+                #     child.filtered_update(set(child.event) - minus)
+                #     child.event = set(minus)
+                #     child.updated = True
+                y = child.filtered_update(event - minus)
                 return self.address + list(y)
             else:
-                return self.address+[0]
+                return self.address + [0]
         else:
-            self.child.append(ClusterTree(event, deep=self.deep + 1, sim_level=self.sim_level if self.deep <=1 else 0.5))
+            self.child.append(
+                ClusterTree(event, deep=self.deep + 1, sim_level=self.sim_level if self.deep <= 1 else 0.5))
             return [len(self.child) - 1, 0]
 
     def update(self, event):
         event_copy = copy(event)
         if event:
-            delete_some_field(event_copy)
             event = tuple(sorted(get_features(event_copy)))
             if event not in self.prepocessed_events:
                 self.updated = True
                 stamp = self.filtered_update(event)
-                self.prepocessed_events[event]=stamp
+                self.prepocessed_events[event] = stamp
             return self.prepocessed_events[event]
         else:
             return str([-1, ])
