@@ -62,13 +62,12 @@ class ClusterTree:
         if ch:
             child = ch['argmax']
             minus = event & set(child.event)
-            child.event = list(minus)
             self.address = [ch['address'], ]
             if len(event - minus) > 0:
-                # if not child.updated:
-                #     child.filtered_update(set(child.event) - minus)
-                #     child.event = set(minus)
-                #     child.updated = True
+                if not child.updated and len(minus) > 0:
+                    child.filtered_update(set(child.event) - minus)
+                    child.event = list(minus)
+                    child.updated = True
                 y = child.filtered_update(event - minus)
                 return self.address + list(y)
             else:
@@ -91,20 +90,16 @@ class ClusterTree:
             return str([-1, ])
 
     def sim(self, t1, t2):
-        condition = True
         first_counter = Counter(t1)
         second_counter = Counter(t2)
         united_counter = Counter(t1)
         united_counter.update(t2)
 
-        for key in united_counter:
-            parsed_key = key.split('$')[0]
-            if parsed_key in self.fields and key not in first_counter:
-                condition = False
-        siml = 0
-        for i in first_counter:
-            if i in second_counter and first_counter[i] == second_counter[i]:
-                siml += 1
+        condition = min([not (key.split('$')[0] in self.fields and key not in first_counter)
+                         for key in united_counter] + [True])
+
+        siml = sum([first_counter[i] == second_counter[i] for i in first_counter if i in second_counter] + [0])
+
         if min(len(first_counter), len(second_counter)) == 0:
             return 1
         else:
